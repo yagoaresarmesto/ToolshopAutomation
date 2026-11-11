@@ -1,0 +1,21 @@
+# Entorno virtual
+.venv/
+
+# Archivos generados por Python y pytest
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Configuración local de PyCharm
+.idea/
+
+# Resultados y evidencias de ejecución
+test-results/
+playwright-report/
+
+# Variables locales y estados de autenticación
+.env
+.env.*
+!.env.example
+storage_state.json
+playwright/.auth/
