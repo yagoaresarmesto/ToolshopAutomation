@@ -8,6 +8,11 @@ class LoginPage:
         self.password_input = page.get_by_test_id("password")
         self.login_button = page.get_by_test_id("login-submit")
 
+        self.email_error_message = page.get_by_test_id("email-error")
+        self.password_error_message = page.get_by_test_id("password-error")
+        self.login_error_message = page.get_by_test_id("login-error")
+
+
     def open(self):
         self.page.goto("/auth/login")
 

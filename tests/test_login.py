@@ -19,3 +19,19 @@ def test_customer_can_login_with_valid_credentials(page: Page):
         "https://practicesoftwaretesting.com/account"
     )
     expect(header.user_menu).to_have_text("Jane Doe")
+
+# Jira: TSA-6 — Sign-in with an incorrect password
+def test_customer_cannot_login_with_incorrect_password(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+    login_page.login("customer@practicesoftwaretesting.com", "WrongPassword123!")
+
+    expect(login_page.login_error_message).to_be_visible()
+    expect(login_page.login_error_message).to_have_text(
+        "Invalid email or password"
+    )
+
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/auth/login"
+    )
