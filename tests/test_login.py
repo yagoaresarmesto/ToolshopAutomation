@@ -218,3 +218,16 @@ def test_customer_can_login_after_correcting_email_format(page: Page):
         "https://practicesoftwaretesting.com/account"
     )
     expect(header.user_menu).to_have_text(CUSTOMER["name"])
+
+
+# Jira: TSA-15 — Password is masked by default
+def test_password_is_masked_by_default(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+
+    expect(login_page.password_input).to_have_attribute("type", "password")
+
+    login_page.password_input.fill("MaskCheck123!")
+
+    expect(login_page.password_input).to_have_attribute("type", "password")
