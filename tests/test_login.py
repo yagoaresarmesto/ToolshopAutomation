@@ -7,7 +7,6 @@ from pages.account_page import AccountPage
 
 
 # Jira: TSA-5 — Successful sign-in with valid customer credentials
-# https://automationplaywright.atlassian.net/browse/TSA-5
 def test_customer_can_login_with_valid_credentials(page: Page):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
@@ -142,3 +141,28 @@ def test_customer_cannot_login_with_invalid_email_format(page: Page, invalid_ema
     expect(page).to_have_url(
         "https://practicesoftwaretesting.com/auth/login"
     )
+
+# Jira: TSA-12 — Successful sign-in after correcting an incorrect password
+@pytest.mark.usefixtures("customer_with_reset_login_attempts")
+def test_customer_can_login_after_correcting_password(page: Page):
+    login_page = LoginPage(page)
+    account_page = AccountPage(page)
+    header = Header(page)
+
+    login_page.open()
+
+    login_page.login(CUSTOMER["email"], "SoftwaretestingQA#02")
+
+    expect(login_page.email_error_message).not_to_be_visible()
+
+    expect(login_page.login_error_message).to_be_visible()
+    expect(login_page.login_error_message).to_have_text(
+        "Invalid email or password"
+    )
+
+    login_page.login(CUSTOMER["email"], CUSTOMER["password"])
+    expect(account_page.heading).to_be_visible()
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/account"
+    )
+    expect(header.user_menu).to_have_text(CUSTOMER["name"])
