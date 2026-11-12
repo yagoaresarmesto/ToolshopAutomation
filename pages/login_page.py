@@ -12,6 +12,8 @@ class LoginPage:
         self.password_error_message = page.get_by_test_id("password-error")
         self.login_error_message = page.get_by_test_id("login-error")
 
+        self.register_link = page.get_by_test_id("register-link")
+
 
     def open(self):
         self.page.goto("/auth/login")
@@ -20,3 +22,6 @@ class LoginPage:
         self.email_input.fill(email)
         self.password_input.fill(password)
         self.login_button.click()
+
+    def go_to_register(self):
+        self.register_link.click()

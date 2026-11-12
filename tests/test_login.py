@@ -231,3 +231,21 @@ def test_password_is_masked_by_default(page: Page):
     login_page.password_input.fill("MaskCheck123!")
 
     expect(login_page.password_input).to_have_attribute("type", "password")
+
+# Jira: TSA-16 — Navigate from sign-in to customer registration
+def test_visitor_can_navigate_to_registration(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+
+    login_page.go_to_register()
+
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/auth/register"
+    )
+
+    expect(
+        page.get_by_role(
+            "heading", name="Customer registration", exact=True
+        )
+    ).to_be_visible()
