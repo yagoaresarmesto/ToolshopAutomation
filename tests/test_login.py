@@ -166,3 +166,30 @@ def test_customer_can_login_after_correcting_password(page: Page):
         "https://practicesoftwaretesting.com/account"
     )
     expect(header.user_menu).to_have_text(CUSTOMER["name"])
+
+# Jira: TSA-13 — Successful sign-in after completing required fields
+def test_customer_can_login_after_completing_required_fields(page: Page):
+    login_page = LoginPage(page)
+    account_page = AccountPage(page)
+    header = Header(page)
+
+    login_page.open()
+
+    login_page.login("", "")
+
+    expect(login_page.email_error_message).to_be_visible()
+    expect(login_page.password_error_message).to_be_visible()
+
+    expect(login_page.email_error_message).to_have_text(
+        "Email is required"
+    )
+    expect(login_page.password_error_message).to_have_text(
+        "Password is required"
+    )
+
+    login_page.login(CUSTOMER["email"], CUSTOMER["password"])
+    expect(account_page.heading).to_be_visible()
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/account"
+    )
+    expect(header.user_menu).to_have_text(CUSTOMER["name"])
