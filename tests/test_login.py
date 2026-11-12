@@ -249,3 +249,22 @@ def test_visitor_can_navigate_to_registration(page: Page):
             "heading", name="Customer registration", exact=True
         )
     ).to_be_visible()
+
+# Jira: TSA-17 — Navigate from sign-in to password recovery
+def test_visitor_can_navigate_to_password_recovery(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+
+    login_page.go_to_forgot_password()
+
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/auth/forgot-password"
+    )
+
+    expect(
+        page.get_by_role(
+            "heading", name="Forgot Password", exact=True
+        )
+    ).to_be_visible()
+

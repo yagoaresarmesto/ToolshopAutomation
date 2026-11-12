@@ -14,6 +14,8 @@ class LoginPage:
 
         self.register_link = page.get_by_test_id("register-link")
 
+        self.forgot_password_link = page.get_by_test_id("forgot-password-link")
+
 
     def open(self):
         self.page.goto("/auth/login")
@@ -25,3 +27,6 @@ class LoginPage:
 
     def go_to_register(self):
         self.register_link.click()
+
+    def go_to_forgot_password(self):
+        self.forgot_password_link.click()
