@@ -51,3 +51,24 @@ def test_customer_cannot_login_with_unregistered_email(page: Page):
     expect(page).to_have_url(
         "https://practicesoftwaretesting.com/auth/login"
     )
+
+# Jira: TSA-8 — Sign-in with both fields empty
+def test_customer_cannot_login_with_empty_fields(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+
+    login_page.login("", "")
+    expect(login_page.email_error_message).to_be_visible()
+    expect(login_page.password_error_message).to_be_visible()
+
+    expect(login_page.email_error_message).to_have_text(
+        "Email is required"
+    )
+    expect(login_page.password_error_message).to_have_text(
+        "Password is required"
+    )
+
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/auth/login"
+    )
