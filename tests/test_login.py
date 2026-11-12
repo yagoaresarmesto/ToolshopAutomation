@@ -75,7 +75,6 @@ def test_customer_cannot_login_with_empty_fields(page: Page):
 
 # Jira: TSA-9 — Sign-in with an empty email address
 def test_customer_cannot_login_with_empty_email(page: Page):
-
     login_page = LoginPage(page)
 
     login_page.open()
@@ -87,6 +86,25 @@ def test_customer_cannot_login_with_empty_email(page: Page):
 
     expect(login_page.email_error_message).to_have_text(
         "Email is required"
+    )
+
+    expect(page).to_have_url(
+        "https://practicesoftwaretesting.com/auth/login"
+    )
+
+# Jira: TSA-10 — Sign-in with an empty password
+def test_customer_cannot_login_with_empty_password(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+
+    login_page.login("customer@practicesoftwaretesting.com", "")
+    expect(login_page.email_error_message).not_to_be_visible()
+
+    expect(login_page.password_error_message).to_be_visible()
+
+    expect(login_page.password_error_message).to_have_text(
+        "Password is required"
     )
 
     expect(page).to_have_url(
