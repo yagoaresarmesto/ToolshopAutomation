@@ -268,3 +268,20 @@ def test_visitor_can_navigate_to_password_recovery(page: Page):
         )
     ).to_be_visible()
 
+# Jira: TSA-18 — Show and hide the password using the visibility toggle
+def test_visitor_can_toggle_password_visibility(page: Page):
+    login_page = LoginPage(page)
+
+    login_page.open()
+
+    login_page.password_input.fill("MaskCheck123!")
+
+    expect(login_page.password_input).to_have_attribute("type", "password")
+
+    login_page.toggle_password_visibility()
+
+    expect(login_page.password_input).to_have_attribute("type", "text")
+
+    login_page.toggle_password_visibility()
+
+    expect(login_page.password_input).to_have_attribute("type", "password")

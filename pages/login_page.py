@@ -5,7 +5,13 @@ class LoginPage:
         self.page = page
 
         self.email_input = page.get_by_test_id("email")
+
         self.password_input = page.get_by_test_id("password")
+
+        self.password_visibility_button = (
+            page.locator("app-password-input").get_by_role("button")
+        )
+
         self.login_button = page.get_by_test_id("login-submit")
 
         self.email_error_message = page.get_by_test_id("email-error")
@@ -24,6 +30,9 @@ class LoginPage:
         self.email_input.fill(email)
         self.password_input.fill(password)
         self.login_button.click()
+
+    def toggle_password_visibility(self):
+        self.password_visibility_button.click()
 
     def go_to_register(self):
         self.register_link.click()
