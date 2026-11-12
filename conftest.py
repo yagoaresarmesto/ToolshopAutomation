@@ -1,6 +1,6 @@
 import pytest
+from uuid import uuid4
 from playwright.sync_api import Playwright
-from data.users import CUSTOMER
 
 
 @pytest.fixture(scope="session")
@@ -17,7 +17,7 @@ def configure_test_id_attribute(playwright: Playwright):
     playwright.selectors.set_test_id_attribute("data-test")
 
 @pytest.fixture
-def customer_with_reset_login_attempts(playwright: Playwright):
+def customer_with_reset_login_attempts(playwright: Playwright, customer):
     """Reinicia los intentos fallidos antes y después del test."""
     api = playwright.request.new_context(
         base_url="https://api.practicesoftwaretesting.com"
@@ -27,8 +27,8 @@ def customer_with_reset_login_attempts(playwright: Playwright):
         response = api.post(
             "/users/login",
             data={
-                "email": CUSTOMER["email"],
-                "password": CUSTOMER["password"],
+                "email": customer["email"],
+                "password": customer["password"],
             },
         )
 
@@ -45,3 +45,50 @@ def customer_with_reset_login_attempts(playwright: Playwright):
             reset_login_attempts()
         finally:
             api.dispose()
+
+@pytest.fixture(scope="session")
+def customer(playwright: Playwright):
+    """Crea un cliente exclusivo para la ejecución de pruebas."""
+    unique_id = uuid4().hex
+
+    registration_data = {
+        "first_name": "Yago",
+        "last_name": "Tester",
+        "dob": "1990-01-15",
+        "address": {
+            "street": "Calle de Pruebas",
+            "city": "Madrid",
+            "state": "Madrid",
+            "country": "ES",
+            "postal_code": "28001",
+        },
+        "phone": "000000000",
+        "email": f"toolshop-qa-{unique_id}@example.com",
+        "password": "SoftwaretestingQA#01",
+    }
+
+    api = playwright.request.new_context(
+        base_url="https://api.practicesoftwaretesting.com"
+    )
+
+    try:
+        response = api.post(
+            "/users/register",
+            data=registration_data,
+        )
+
+        assert response.status == 201, (
+            "No se pudo crear el cliente de pruebas. "
+            f"Estado HTTP: {response.status}"
+        )
+
+        return {
+            "email": registration_data["email"],
+            "password": registration_data["password"],
+            "name": (
+                f"{registration_data['first_name']} "
+                f"{registration_data['last_name']}"
+            ),
+        }
+    finally:
+        api.dispose()

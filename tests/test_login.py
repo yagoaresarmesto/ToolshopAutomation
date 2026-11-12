@@ -1,5 +1,4 @@
 import pytest
-from data.users import CUSTOMER
 from playwright.sync_api import Page, expect
 from components.header import Header
 from pages.login_page import LoginPage
@@ -7,26 +6,27 @@ from pages.account_page import AccountPage
 
 
 # Jira: TSA-5 — Successful sign-in with valid customer credentials
-def test_customer_can_login_with_valid_credentials(page: Page):
+def test_customer_can_login_with_valid_credentials(page: Page, customer):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
 
     login_page.open()
-    login_page.login(CUSTOMER["email"], CUSTOMER["password"])
+    login_page.login(customer["email"], customer["password"])
+
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
         "https://practicesoftwaretesting.com/account"
     )
-    expect(header.user_menu).to_have_text(CUSTOMER["name"])
+    expect(header.user_menu).to_have_text(customer["name"])
 
 # Jira: TSA-6 — Sign-in with an incorrect password
 @pytest.mark.usefixtures("customer_with_reset_login_attempts")
-def test_customer_cannot_login_with_incorrect_password(page: Page):
+def test_customer_cannot_login_with_incorrect_password(page: Page, customer):
     login_page = LoginPage(page)
 
     login_page.open()
-    login_page.login(CUSTOMER["email"], "WrongPassword123!")
+    login_page.login(customer["email"], "WrongPassword123!")
 
     expect(login_page.login_error_message).to_be_visible()
     expect(login_page.login_error_message).to_have_text(
@@ -144,14 +144,14 @@ def test_customer_cannot_login_with_invalid_email_format(page: Page, invalid_ema
 
 # Jira: TSA-12 — Successful sign-in after correcting an incorrect password
 @pytest.mark.usefixtures("customer_with_reset_login_attempts")
-def test_customer_can_login_after_correcting_password(page: Page):
+def test_customer_can_login_after_correcting_password(page: Page, customer):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
 
     login_page.open()
 
-    login_page.login(CUSTOMER["email"], "SoftwaretestingQA#02")
+    login_page.login(customer["email"], "SoftwaretestingQA#02")
 
     expect(login_page.email_error_message).not_to_be_visible()
 
@@ -160,15 +160,15 @@ def test_customer_can_login_after_correcting_password(page: Page):
         "Invalid email or password"
     )
 
-    login_page.login(CUSTOMER["email"], CUSTOMER["password"])
+    login_page.login(customer["email"], customer["password"])
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
         "https://practicesoftwaretesting.com/account"
     )
-    expect(header.user_menu).to_have_text(CUSTOMER["name"])
+    expect(header.user_menu).to_have_text(customer["name"])
 
 # Jira: TSA-13 — Successful sign-in after completing required fields
-def test_customer_can_login_after_completing_required_fields(page: Page):
+def test_customer_can_login_after_completing_required_fields(page: Page, customer):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
@@ -187,22 +187,22 @@ def test_customer_can_login_after_completing_required_fields(page: Page):
         "Password is required"
     )
 
-    login_page.login(CUSTOMER["email"], CUSTOMER["password"])
+    login_page.login(customer["email"], customer["password"])
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
         "https://practicesoftwaretesting.com/account"
     )
-    expect(header.user_menu).to_have_text(CUSTOMER["name"])
+    expect(header.user_menu).to_have_text(customer["name"])
 
 # Jira: TSA-14 — Successful sign-in after correcting an invalid email format
-def test_customer_can_login_after_correcting_email_format(page: Page):
+def test_customer_can_login_after_correcting_email_format(page: Page, customer):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
 
     login_page.open()
 
-    login_page.login("customer.example.com", CUSTOMER["password"])
+    login_page.login("customer.example.com", customer["password"])
 
     expect(login_page.email_error_message).to_be_visible()
 
@@ -212,12 +212,12 @@ def test_customer_can_login_after_correcting_email_format(page: Page):
         "Email format is invalid"
     )
 
-    login_page.login(CUSTOMER["email"], CUSTOMER["password"])
+    login_page.login(customer["email"], customer["password"])
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
         "https://practicesoftwaretesting.com/account"
     )
-    expect(header.user_menu).to_have_text(CUSTOMER["name"])
+    expect(header.user_menu).to_have_text(customer["name"])
 
 
 # Jira: TSA-15 — Password is masked by default
