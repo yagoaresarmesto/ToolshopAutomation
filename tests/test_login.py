@@ -6,7 +6,7 @@ from pages.account_page import AccountPage
 
 
 # Jira: TSA-5 — Successful sign-in with valid customer credentials
-def test_customer_can_login_with_valid_credentials(page: Page, customer):
+def test_customer_can_login_with_valid_credentials(page: Page, customer, base_url: str):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
@@ -16,13 +16,15 @@ def test_customer_can_login_with_valid_credentials(page: Page, customer):
 
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/account"
+        f"{base_url.rstrip('/')}/account"
     )
     expect(header.user_menu).to_have_text(customer["name"])
 
 # Jira: TSA-6 — Sign-in with an incorrect password
 @pytest.mark.usefixtures("customer_with_reset_login_attempts")
-def test_customer_cannot_login_with_incorrect_password(page: Page, customer):
+def test_customer_cannot_login_with_incorrect_password(
+    page: Page, customer, base_url: str
+):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -34,11 +36,11 @@ def test_customer_cannot_login_with_incorrect_password(page: Page, customer):
     )
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/login"
+        f"{base_url.rstrip('/')}/auth/login"
     )
 
 # Jira: TSA-7 — Sign-in with an unregistered email address
-def test_customer_cannot_login_with_unregistered_email(page: Page):
+def test_customer_cannot_login_with_unregistered_email(page: Page, base_url: str):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -50,11 +52,11 @@ def test_customer_cannot_login_with_unregistered_email(page: Page):
     )
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/login"
+        f"{base_url.rstrip('/')}/auth/login"
     )
 
 # Jira: TSA-8 — Sign-in with both fields empty
-def test_customer_cannot_login_with_empty_fields(page: Page):
+def test_customer_cannot_login_with_empty_fields(page: Page, base_url: str):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -71,11 +73,11 @@ def test_customer_cannot_login_with_empty_fields(page: Page):
     )
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/login"
+        f"{base_url.rstrip('/')}/auth/login"
     )
 
 # Jira: TSA-9 — Sign-in with an empty email address
-def test_customer_cannot_login_with_empty_email(page: Page):
+def test_customer_cannot_login_with_empty_email(page: Page, base_url: str):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -90,11 +92,11 @@ def test_customer_cannot_login_with_empty_email(page: Page):
     )
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/login"
+        f"{base_url.rstrip('/')}/auth/login"
     )
 
 # Jira: TSA-10 — Sign-in with an empty password
-def test_customer_cannot_login_with_empty_password(page: Page):
+def test_customer_cannot_login_with_empty_password(page: Page, base_url: str):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -109,7 +111,7 @@ def test_customer_cannot_login_with_empty_password(page: Page):
     )
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/login"
+        f"{base_url.rstrip('/')}/auth/login"
     )
 
 # Jira: TSA-11 — Sign-in with an invalid email format
@@ -123,7 +125,9 @@ def test_customer_cannot_login_with_empty_password(page: Page):
     ],
 )
 
-def test_customer_cannot_login_with_invalid_email_format(page: Page, invalid_email: str):
+def test_customer_cannot_login_with_invalid_email_format(
+    page: Page, invalid_email: str, base_url: str
+):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -139,12 +143,14 @@ def test_customer_cannot_login_with_invalid_email_format(page: Page, invalid_ema
     )
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/login"
+        f"{base_url.rstrip('/')}/auth/login"
     )
 
 # Jira: TSA-12 — Successful sign-in after correcting an incorrect password
 @pytest.mark.usefixtures("customer_with_reset_login_attempts")
-def test_customer_can_login_after_correcting_password(page: Page, customer):
+def test_customer_can_login_after_correcting_password(
+    page: Page, customer, base_url: str
+):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
@@ -163,12 +169,14 @@ def test_customer_can_login_after_correcting_password(page: Page, customer):
     login_page.login(customer["email"], customer["password"])
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/account"
+        f"{base_url.rstrip('/')}/account"
     )
     expect(header.user_menu).to_have_text(customer["name"])
 
 # Jira: TSA-13 — Successful sign-in after completing required fields
-def test_customer_can_login_after_completing_required_fields(page: Page, customer):
+def test_customer_can_login_after_completing_required_fields(
+    page: Page, customer, base_url: str
+):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
@@ -190,12 +198,14 @@ def test_customer_can_login_after_completing_required_fields(page: Page, custome
     login_page.login(customer["email"], customer["password"])
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/account"
+        f"{base_url.rstrip('/')}/account"
     )
     expect(header.user_menu).to_have_text(customer["name"])
 
 # Jira: TSA-14 — Successful sign-in after correcting an invalid email format
-def test_customer_can_login_after_correcting_email_format(page: Page, customer):
+def test_customer_can_login_after_correcting_email_format(
+    page: Page, customer, base_url: str
+):
     login_page = LoginPage(page)
     account_page = AccountPage(page)
     header = Header(page)
@@ -215,7 +225,7 @@ def test_customer_can_login_after_correcting_email_format(page: Page, customer):
     login_page.login(customer["email"], customer["password"])
     expect(account_page.heading).to_be_visible()
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/account"
+        f"{base_url.rstrip('/')}/account"
     )
     expect(header.user_menu).to_have_text(customer["name"])
 
@@ -233,7 +243,7 @@ def test_password_is_masked_by_default(page: Page):
     expect(login_page.password_input).to_have_attribute("type", "password")
 
 # Jira: TSA-16 — Navigate from sign-in to customer registration
-def test_visitor_can_navigate_to_registration(page: Page):
+def test_visitor_can_navigate_to_registration(page: Page, base_url: str):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -241,7 +251,7 @@ def test_visitor_can_navigate_to_registration(page: Page):
     login_page.go_to_register()
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/register"
+        f"{base_url.rstrip('/')}/auth/register"
     )
 
     expect(
@@ -251,7 +261,7 @@ def test_visitor_can_navigate_to_registration(page: Page):
     ).to_be_visible()
 
 # Jira: TSA-17 — Navigate from sign-in to password recovery
-def test_visitor_can_navigate_to_password_recovery(page: Page):
+def test_visitor_can_navigate_to_password_recovery(page: Page, base_url: str):
     login_page = LoginPage(page)
 
     login_page.open()
@@ -259,7 +269,7 @@ def test_visitor_can_navigate_to_password_recovery(page: Page):
     login_page.go_to_forgot_password()
 
     expect(page).to_have_url(
-        "https://practicesoftwaretesting.com/auth/forgot-password"
+        f"{base_url.rstrip('/')}/auth/forgot-password"
     )
 
     expect(

@@ -1,4 +1,5 @@
 import pytest
+import os
 from uuid import uuid4
 from playwright.sync_api import Playwright
 
@@ -17,10 +18,12 @@ def configure_test_id_attribute(playwright: Playwright):
     playwright.selectors.set_test_id_attribute("data-test")
 
 @pytest.fixture
-def customer_with_reset_login_attempts(playwright: Playwright, customer):
+def customer_with_reset_login_attempts(
+    playwright: Playwright, customer, api_base_url
+):
     """Reinicia los intentos fallidos antes y después del test."""
     api = playwright.request.new_context(
-        base_url="https://api.practicesoftwaretesting.com"
+        base_url=api_base_url
     )
 
     def reset_login_attempts():
@@ -47,7 +50,7 @@ def customer_with_reset_login_attempts(playwright: Playwright, customer):
             api.dispose()
 
 @pytest.fixture(scope="session")
-def customer(playwright: Playwright):
+def customer(playwright: Playwright, api_base_url):
     """Crea un cliente exclusivo para la ejecución de pruebas."""
     unique_id = uuid4().hex
 
@@ -68,7 +71,7 @@ def customer(playwright: Playwright):
     }
 
     api = playwright.request.new_context(
-        base_url="https://api.practicesoftwaretesting.com"
+        base_url=api_base_url
     )
 
     try:
@@ -92,3 +95,11 @@ def customer(playwright: Playwright):
         }
     finally:
         api.dispose()
+
+@pytest.fixture(scope="session")
+def api_base_url():
+    """Permite configurar la API del entorno de pruebas."""
+    return os.getenv(
+        "TOOLSHOP_API_URL",
+        "https://api.practicesoftwaretesting.com",
+    )

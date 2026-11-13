@@ -19,3 +19,5 @@ playwright-report/
 !.env.example
 storage_state.json
 playwright/.auth/
+# Aplicación descargada por el workflow de CI
+/toolshop-app/

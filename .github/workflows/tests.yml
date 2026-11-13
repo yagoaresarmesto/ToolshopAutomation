@@ -1,0 +1,110 @@
+name: Automated tests
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests on Microsoft Edge
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Checkout Toolshop application
+        uses: actions/checkout@v6
+        with:
+          repository: testsmith-io/practice-software-testing
+          ref: ae7caecb811dd8952c09d997e69be7cb946ecd44
+          path: toolshop-app
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Install Microsoft Edge
+        run: python -m playwright install --with-deps msedge
+
+      - name: Start Toolshop
+        working-directory: toolshop-app
+        run: |
+          echo "SPRINT=sprint5" > .env
+          docker compose -f docker-compose.yml up -d --build
+
+      - name: Wait for dependencies and initialize database
+        working-directory: toolshop-app
+        timeout-minutes: 8
+        run: |
+          composer_id=$(docker compose -f docker-compose.yml ps -a -q composer)
+          composer_exit=$(timeout 300 docker wait "$composer_id")
+          if [ "$composer_exit" != "0" ]; then
+            docker compose -f docker-compose.yml logs composer
+            exit 1
+          fi
+
+          for attempt in {1..60}; do
+            if docker compose -f docker-compose.yml exec -T mariadb mysqladmin ping -h 127.0.0.1 -uroot -proot --silent; then
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              echo "MariaDB did not become ready."
+              exit 1
+            fi
+            sleep 2
+          done
+
+          # Composer and PHP use different numeric IDs for www-data on Linux.
+          docker compose -f docker-compose.yml exec -T --user root laravel-api sh -c 'chown -R www-data:www-data storage bootstrap/cache && chmod -R ug+rwX storage bootstrap/cache'
+          docker compose -f docker-compose.yml exec -T laravel-api php artisan optimize:clear
+          docker compose -f docker-compose.yml exec -T laravel-api php artisan migrate:fresh --seed --force
+
+      - name: Wait for Toolshop HTTP endpoints
+        timeout-minutes: 6
+        run: |
+          curl --fail --silent --show-error --retry 60 --retry-delay 2 --retry-all-errors --max-time 5 --output /dev/null http://localhost:8091/products
+          curl --fail --silent --show-error --retry 60 --retry-delay 2 --retry-all-errors --max-time 5 --output /dev/null http://localhost:4200/auth/login
+
+      - name: Run tests
+        env:
+          TOOLSHOP_API_URL: http://localhost:8091
+        run: |
+          python -m pytest -v --base-url=http://localhost:4200 \
+            --junitxml=test-results/results.xml \
+            --tracing=retain-on-failure \
+            --screenshot=only-on-failure
+
+      - name: Collect Toolshop logs
+        if: ${{ !cancelled() && hashFiles('toolshop-app/docker-compose.yml') != '' }}
+        working-directory: toolshop-app
+        run: |
+          mkdir -p ../test-results
+          docker compose -f docker-compose.yml ps -a > ../test-results/docker-status.txt 2>&1
+          docker compose -f docker-compose.yml logs --no-color > ../test-results/docker.log 2>&1
+          docker compose -f docker-compose.yml exec -T --user root laravel-api sh -c 'cat storage/logs/laravel*.log' > ../test-results/laravel.log 2>&1 || true
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+      - name: Stop Toolshop
+        if: ${{ always() && hashFiles('toolshop-app/docker-compose.yml') != '' }}
+        working-directory: toolshop-app
+        run: docker compose -f docker-compose.yml down --volumes
