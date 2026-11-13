@@ -67,6 +67,9 @@ jobs:
             sleep 2
           done
 
+          # Composer and PHP use different numeric IDs for www-data on Linux.
+          docker compose -f docker-compose.yml exec -T --user root laravel-api sh -c 'chown -R www-data:www-data storage bootstrap/cache && chmod -R ug+rwX storage bootstrap/cache'
+          docker compose -f docker-compose.yml exec -T laravel-api php artisan optimize:clear
           docker compose -f docker-compose.yml exec -T laravel-api php artisan migrate:fresh --seed --force
 
       - name: Wait for Toolshop HTTP endpoints
@@ -91,6 +94,7 @@ jobs:
           mkdir -p ../test-results
           docker compose -f docker-compose.yml ps -a > ../test-results/docker-status.txt 2>&1
           docker compose -f docker-compose.yml logs --no-color > ../test-results/docker.log 2>&1
+          docker compose -f docker-compose.yml exec -T --user root laravel-api sh -c 'cat storage/logs/laravel*.log' > ../test-results/laravel.log 2>&1 || true
 
       - name: Upload test results
         if: ${{ !cancelled() }}
